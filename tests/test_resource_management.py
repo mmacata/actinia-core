@@ -1,4 +1,30 @@
 # -*- coding: utf-8 -*-
+#######
+# actinia-core - an open source REST API for scalable, distributed, high
+# performance processing of geographical data that uses GRASS GIS for
+# computational tasks. For details, see https://actinia.mundialis.de/
+#
+# Copyright (c) 2016-2018 Sören Gebbert and mundialis GmbH & Co. KG
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+#######
+
+"""
+Tests: User requests test case
+"""
+from pprint import pprint
 from flask.json import dumps as json_dumps
 from werkzeug.datastructures import Headers
 from flask.json import loads as json_loads
@@ -13,8 +39,9 @@ except:
     from test_resource_base import ActiniaResourceTestCaseBase, URL_PREFIX
 from actinia_core.resources.common.user import ActiniaUser
 
+__license__ = "GPLv3"
 __author__ = "Sören Gebbert"
-__copyright__ = "Copyright 2016, Sören Gebbert"
+__copyright__ = "Copyright 2016-2018, Sören Gebbert and mundialis GmbH & Co. KG"
 __maintainer__ = "Sören Gebbert"
 __email__ = "soerengebbert@googlemail.com"
 
@@ -73,44 +100,72 @@ class UserRequestsTestCase(ActiniaResourceTestCaseBase):
 
         rv = self.server.get(URL_PREFIX + '/resources/%s' % user_id,
                              headers=auth_header)
-        print(rv.data.decode())
+        # print(rv.data.decode())
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i" % rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s" % rv.mimetype)
 
         resource_list = json_loads(rv.data)["resource_list"]
+
+        pprint(resource_list)
+
         self.assertTrue(len(resource_list) == 3)
 
         # Count return stats
         finished = 0
         for resource in resource_list:
             finished += int(resource["status"] == "finished")
-            print(resource["status"])
+            # print(resource["status"])
 
         self.assertTrue(finished == 3)
+
+        # Check the different resource list parameters
+        rv = self.server.get(URL_PREFIX + '/resources/%s?num=1' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 1)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?num=2' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 2)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?num=2&type=finished' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 2)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?num=2&type=all' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 2)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?type=all' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 3)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?type=finished' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 3)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?type=terminated' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 0)
+
+        rv = self.server.get(URL_PREFIX + '/resources/%s?type=unknown' % user_id, headers=auth_header)
+        self.assertTrue(len(json_loads(rv.data)["resource_list"]) == 0)
 
         # Check permission access using the default users
 
         rv = self.server.get(URL_PREFIX + '/resources/%s' % user_id,
                              headers=self.guest_auth_header)
-        print(rv.data.decode())
+        # print(rv.data.decode())
         self.assertEqual(rv.status_code, 401, "HTML status code is wrong %i" % rv.status_code)
         #self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s" % rv.mimetype)
 
         rv = self.server.get(URL_PREFIX + '/resources/%s' % user_id,
                              headers=self.user_auth_header)
-        print(rv.data.decode())
+        # print(rv.data.decode())
         self.assertEqual(rv.status_code, 401, "HTML status code is wrong %i" % rv.status_code)
         #self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s" % rv.mimetype)
 
         rv = self.server.get(URL_PREFIX + '/resources/%s' % user_id,
                              headers=self.admin_auth_header)
-        print(rv.data.decode())
+        # print(rv.data.decode())
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i" % rv.status_code)
         #self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s" % rv.mimetype)
 
         rv = self.server.get(URL_PREFIX + '/resources/%s' % user_id,
                              headers=self.root_auth_header)
-        print(rv.data.decode())
+        # print(rv.data.decode())
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i" % rv.status_code)
         #self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s" % rv.mimetype)
 

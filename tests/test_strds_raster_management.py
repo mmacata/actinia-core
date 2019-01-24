@@ -1,4 +1,30 @@
 # -*- coding: utf-8 -*-
+#######
+# actinia-core - an open source REST API for scalable, distributed, high
+# performance processing of geographical data that uses GRASS GIS for
+# computational tasks. For details, see https://actinia.mundialis.de/
+#
+# Copyright (c) 2016-2018 Sören Gebbert and mundialis GmbH & Co. KG
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+#######
+
+"""
+Tests: STRDS test case
+"""
+from pprint import pprint
 from flask.json import loads as json_loads, dumps as json_dumps
 import unittest
 try:
@@ -7,10 +33,10 @@ except:
     from test_resource_base import ActiniaResourceTestCaseBase, URL_PREFIX
 
 __license__ = "GPLv3"
-__author__     = "Sören Gebbert"
-__copyright__  = "Copyright 2016, Sören Gebbert"
+__author__ = "Sören Gebbert"
+__copyright__ = "Copyright 2016-2018, Sören Gebbert and mundialis GmbH & Co. KG"
 __maintainer__ = "Sören Gebbert"
-__email__      = "soerengebbert@googlemail.com"
+__email__ = "soerengebbert@googlemail.com"
 
 
 class STRDSTestCase(ActiniaResourceTestCaseBase):
@@ -43,7 +69,7 @@ class STRDSTestCase(ActiniaResourceTestCaseBase):
                                                "title": "A nice title",
                                                "description": "A nice description"}),
                               content_type="application/json")
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 
@@ -52,34 +78,34 @@ class STRDSTestCase(ActiniaResourceTestCaseBase):
                               headers=self.admin_auth_header,
                               data=json_dumps({"expression": "1"}),
                               content_type="application/json")
-        print(rv.data)
+        pprint(json_loads(rv.data))
         rv = self.server.post(URL_PREFIX + '/locations/ECAD/mapsets/%s/raster_layers/test_layer_2'%new_mapset,
                               headers=self.admin_auth_header,
                               data=json_dumps({"expression": "2"}),
                               content_type="application/json")
-        print(rv.data)
+        pprint(json_loads(rv.data))
         rv = self.server.post(URL_PREFIX + '/locations/ECAD/mapsets/%s/raster_layers/test_layer_3'%new_mapset,
                               headers=self.admin_auth_header,
                               data=json_dumps({"expression": "3"}),
                               content_type="application/json")
-        print(rv.data)
+        pprint(json_loads(rv.data))
 
-        raster_layers = [{"name": "test_layer_1", "start_time": "2000-01-01", "end_time": "2000-01-02"},
-                         {"name": "test_layer_2", "start_time": "2000-01-02", "end_time": "2000-01-03"},
-                         {"name": "test_layer_3", "start_time": "2000-01-03", "end_time": "2000-01-04"}]
+        raster_layers = [{"name": "test_layer_1", "start_time": "2000-01-01 00:00:00", "end_time": "2000-01-02 00:00:00"},
+                         {"name": "test_layer_2", "start_time": "2000-01-02 00:00:00", "end_time": "2000-01-03 00:00:00"},
+                         {"name": "test_layer_3", "start_time": "2000-01-03 00:00:00", "end_time": "2000-01-04 00:00:00"}]
 
         rv = self.server.put(URL_PREFIX + "/locations/ECAD/mapsets/%s/strds/test_strds_register/raster_layers"%new_mapset,
                              data=json_dumps(raster_layers),
                              content_type="application/json",
                              headers=self.admin_auth_header)
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 
         # Check strds
         rv = self.server.get(URL_PREFIX + "/locations/ECAD/mapsets/%s/strds/test_strds_register"%new_mapset,
                              headers=self.admin_auth_header)
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 
@@ -97,14 +123,14 @@ class STRDSTestCase(ActiniaResourceTestCaseBase):
                                 data=json_dumps(raster_layers),
                                 content_type="application/json",
                                 headers=self.user_auth_header)
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 
         # Check strds
         rv = self.server.get(URL_PREFIX + "/locations/ECAD/mapsets/%s/strds/test_strds_register"%new_mapset,
                              headers=self.user_auth_header)
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 
@@ -118,7 +144,7 @@ class STRDSTestCase(ActiniaResourceTestCaseBase):
         # Delete the strds
         rv = self.server.delete(URL_PREFIX + '/locations/ECAD/mapsets/%s/strds/test_strds_register'%new_mapset,
                                 headers=self.user_auth_header)
-        print(rv.data)
+        pprint(json_loads(rv.data))
         self.assertEqual(rv.status_code, 200, "HTML status code is wrong %i"%rv.status_code)
         self.assertEqual(rv.mimetype, "application/json", "Wrong mimetype %s"%rv.mimetype)
 

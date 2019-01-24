@@ -1,6 +1,28 @@
 # -*- coding: utf-8 -*-
+#######
+# actinia-core - an open source REST API for scalable, distributed, high
+# performance processing of geographical data that uses GRASS GIS for
+# computational tasks. For details, see https://actinia.mundialis.de/
+#
+# Copyright (c) 2016-2018 Sören Gebbert and mundialis GmbH & Co. KG
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+#######
+
 """
-GRASS environment initialization
+GRASS GIS environment initialization
 """
 
 import os
@@ -12,10 +34,10 @@ import uuid
 from .messages_logger import MessageLogger
 
 __license__ = "GPLv3"
-__author__     = "Sören Gebbert"
-__copyright__  = "Copyright 2016, Sören Gebbert"
+__author__ = "Sören Gebbert"
+__copyright__ = "Copyright 2016-2018, Sören Gebbert and mundialis GmbH & Co. KG"
 __maintainer__ = "Sören Gebbert"
-__email__      = "soerengebbert@googlemail.com"
+__email__ = "soerengebbert@googlemail.com"
 
 
 class GrassInitError(Exception):
@@ -66,7 +88,8 @@ class GrassEnvironment(ProcessLogging):
         ProcessLogging.__init__(self)
         self.env = {"GISBASE":"", "GISRC":"", "LD_LIBRARY_PATH":"",
                     "GRASS_ADDON_PATH":"", "GRASS_VERSION":"", "PYTHONPATH":"",
-                    "GRASS_MESSAGE_FORMAT":"plain", "GRASS_SKIP_MAPSET_OWNER_CHECK":"1"}
+                    "GRASS_MESSAGE_FORMAT":"plain", "GRASS_SKIP_MAPSET_OWNER_CHECK":"1",
+                    "GRASS_TGIS_RAISE_ON_ERROR": "1"}
 
     def set_grass_environment(self, gisrc_path, grass_gis_base, grass_addon_path):
         """Set the grass environment variables
@@ -82,9 +105,10 @@ class GrassEnvironment(ProcessLogging):
         self.env["GISBASE"] = grass_gis_base
         self.env["GRASS_MESSAGE_FORMAT"] = "plain"
         self.env["GRASS_SKIP_MAPSET_OWNER_CHECK"] = "1"
+        self.env["GRASS_TGIS_RAISE_ON_ERROR"] = "1"
         self.env["GISRC"] = os.path.join(gisrc_path, "gisrc")
         self.env["LD_LIBRARY_PATH"] = str(os.path.join(self.env["GISBASE"], "lib"))
-        self.env["GRASS_VERSION"] = "7.2.svn"
+        self.env["GRASS_VERSION"] = "7.7.svn"
         self.env["GRASS_ADDON_PATH"] = grass_addon_path
         if os.name != 'posix':
             self.env["PATH"] = str(os.path.join(self.env["GISBASE"], "bin") + ";"\
